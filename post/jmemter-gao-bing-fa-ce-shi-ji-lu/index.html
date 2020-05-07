@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+<meta name="referrer" content="same-origin">
+<title>JMemter 高并发测试记录 | Demo</title>
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://Slice1129.github.io/favicon.ico?v=1588832966912">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://Slice1129.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g48m6n592dj20jg0ykdhx.jpg');">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://Slice1129.github.io">
+        <img src="https://Slice1129.github.io/images/avatar.png?v=1588832966912" class="site-logo">
+        <h1 class="site-title">Demo</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://Slice1129.github.io" target="_blank">Slice1129</a> | <a class="rss" href="https://Slice1129.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">JMemter 高并发测试记录</h2>
+            <div class="post-date">2019-06-28</div>
+            
+              <div class="feature-container" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g4goj15u9aj20qo0f0wfj.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <ul>
+<li>打开JMemter<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4golsdmuvj214v0meq3v.jpg" alt="" loading="lazy"></li>
+<li>创建线程组<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4gomydublj20sp0cywf5.jpg" alt="" loading="lazy"><br>
+创建成功后，将线程数量改成自己想要的数值。</li>
+<li>创建http请求<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4gos8kxfyj20k507ujrw.jpg" alt="" loading="lazy"></li>
+<li>输入接口信息及参数<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4got4jkvgj20vd0g4t93.jpg" alt="" loading="lazy"></li>
+<li>添加想要的测试结果显示方式<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4gov5fiqpj20f60hdjrz.jpg" alt="" loading="lazy"></li>
+</ul>
+<p>点击运行，观察结果即可。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://Slice1129.github.io/tag/qNOGriHWV/" class="tag">
+                    Java
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://Slice1129.github.io/post/centos-ying-pan-yi-xie-chang-shi/">
+                  <h3 class="post-title">
+                    Centos 硬盘一些常识
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '517165babf089deae207',
+        clientSecret: '2f627ac9b9bcac92cb8399a31a04cd9a644376fe',
+        repo: 'Slice1129.github.io',
+        owner: 'Slice1129',
+        admin: ['Slice1129'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

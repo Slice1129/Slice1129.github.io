@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://Slice1129.github.io</id>
+    <title>Demo</title>
+    <updated>2020-05-07T06:29:48.899Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://Slice1129.github.io"/>
+    <link rel="self" href="https://Slice1129.github.io/atom.xml"/>
+    <logo>https://Slice1129.github.io/images/avatar.png</logo>
+    <icon>https://Slice1129.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2020, Demo</rights>
+    <entry>
+        <title type="html"><![CDATA[B树和B+树及其区别？]]></title>
+        <id>https://Slice1129.github.io/post/b-shu-he-bshu-ji-qi-qu-bie/</id>
+        <link href="https://Slice1129.github.io/post/b-shu-he-bshu-ji-qi-qu-bie/">
+        </link>
+        <updated>2019-11-12T06:26:11.000Z</updated>
+        <content type="html"><![CDATA[<p>B树和B+树的最主要区别在于：</p>
+<ul>
+<li>B+树是B树的改进版本，将其内结点只做索引使用，移除了指向data record的指针，使得每个节点中能够存放更多的key，因此能有更大的出度。这就意味着存放同样高度的key，树的高层能进一步被压缩，使得检索时间更短。</li>
+<li>当然了,由于底部的叶子结点是链表形式, 因此也可以实现更方便的顺序遍历, 但是这是比较次要的, 最主要的的还是第(1)点.</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Jenkins安装及SpringBoot自动部署]]></title>
+        <id>https://Slice1129.github.io/post/jenkins-an-zhuang-ji-springboot-zi-dong-bu-shu/</id>
+        <link href="https://Slice1129.github.io/post/jenkins-an-zhuang-ji-springboot-zi-dong-bu-shu/">
+        </link>
+        <updated>2019-11-08T08:12:51.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="1-安装jenkins">1、安装Jenkins</h1>
+<p>打开网站<code>https://jenkins.io/zh/download/</code>，仅下载war包。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qqed0olxj21880ol0uv.jpg" alt="" loading="lazy"></p>
+<h1 id="2-启动jenkins">2、启动Jenkins</h1>
+<p>将Jenkins.war放置到某个目录，然后通过java -jar 启动,httpPort设置端口为9090</p>
+<pre><code>/usr/local/jdk8/bin/java -jar /usr/local/jenkins/jenkins.war --httpPort=9090 -XX:ErrorFile=/usr/local/jenkins//hs_err_pid%p.log
+</code></pre>
+<p>等待启动完成。</p>
+<h1 id="3-打开jenkins">3、打开Jenkins</h1>
+<p>如果是在本机启动的，则打开浏览器输入<code>http://localhost:9090/</code>，如果是服务器，则<code>host:9090</code>，记得打开防火墙端口。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qr3e3hgtj21ik15maer.jpg" alt="" loading="lazy"><br>
+我们去服务器中查看密码是多少。</p>
+<pre><code>cat /**/** #图中的路径 
+</code></pre>
+<p>登录进去之后。因为刚开始使用，选择推荐安装，后续要其它插件的话，可在系统设置里再安装。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qr6s2jw8j21i80q2jx4.jpg" alt="" loading="lazy"><br>
+安装过程比较慢，可以先去干点其它事情。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qr8tjrr8j21130opdhr.jpg" alt="" loading="lazy"></p>
+<ul>
+<li>安装Git<pre><code>yum install git
+</code></pre>
+</li>
+<li>安装maven<br>
+打开网址下载<code>https://maven.apache.org/download.cgi</code>，选择下载。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrfchb7tj21fx0nuteh.jpg" alt="maven" loading="lazy"><br>
+下载完成后，解压到某个目录，等会用到。</li>
+</ul>
+<h1 id="配置环境">配置环境</h1>
+<p>点击 <code>系统管理</code>，<code>全局工具配置</code>。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tusu2hqrj21hc0okgpo.jpg" alt="配置" loading="lazy"><br>
+设置maven的配置文件，并设置jdk的目录。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tuv8jsh6j218z0jpq40.jpg" alt="" loading="lazy"><br>
+配置maven目录。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tuvvgedvj216q0dr3yz.jpg" alt="" loading="lazy"><br>
+配置过程服务器，要先安装插件<code>publish over ssh</code>。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tw6y8ltfj21h30ha0tm.jpg" alt="" loading="lazy"><br>
+配置后如图.<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8twjd9diyj21ew0lm3zr.jpg" alt="" loading="lazy"></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td>服务器的名字，可随便定义</td>
+</tr>
+<tr>
+<td>Hostname</td>
+<td>服务器的IP地址</td>
+</tr>
+<tr>
+<td>Username</td>
+<td>用户名</td>
+</tr>
+<tr>
+<td>Remote Directory</td>
+<td>远程服务器上的根目录，jenkis打包后的程序放在此目录下</td>
+</tr>
+<tr>
+<td>Passphrase / Password</td>
+<td>密码（记得勾选Use password authentication, or use a different key）</td>
+</tr>
+<tr>
+<td>Port</td>
+<td>服务器端口</td>
+</tr>
+</tbody>
+</table>
+<h1 id="新建任务">新建任务</h1>
+<p>输入项目名称，选择<code>构建一个maven项目</code>。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qri896cej21g50oo77v.jpg" alt="选择maven项目" loading="lazy"></p>
+<p>是不是没有找到maven项目，这时我们还得安装一个插件。<br>
+系统设置-插件管理-可选插件，搜索<code>Maven Integration</code><br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tvp338gmj21f90lzq5m.jpg" alt="" loading="lazy"><br>
+等待安装完成，安装成功后，点击返回工作台，继续<code>新建任务</code>，此时就看见了<code>构建一个maven</code>项目。<br>
+滚动到源码管理。选择Git，输入我们仓库地址。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrmyommzj21dy0m2wfz.jpg" alt="git地址" loading="lazy"><br>
+图中显示的是验证失败，因为还没有登录git账号。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrp1n588j21fa0nrgn1.jpg" alt="添加git" loading="lazy"><br>
+输入账号和密码后，点击添加即可。分支默认是<code>master</code>，如果与你的仓库不一样，请更改。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrqiq78kj21320g5752.jpg" alt="分支" loading="lazy"><br>
+默认勾选，意思是 每当建立SNAPSHOT依赖项时就进行构建<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrt46elgj215a0awwf6.jpg" alt="" loading="lazy"><br>
+选择我们前面添加的服务器，后期编辑后会上传至服务器。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrvgn5gdj214y0l7abg.jpg" alt="推送至服务器" loading="lazy"></p>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>名称</td>
+<td>本地服务器</td>
+<td>SSH Server名称，根据之前配置选择即可</td>
+</tr>
+<tr>
+<td>源文件</td>
+<td>target/*</td>
+<td>需要传输的文件，支持通配符，编译文件默认都在项目根目录下的target目录中</td>
+</tr>
+<tr>
+<td>删除前缀</td>
+<td>target</td>
+<td>移除匹配到的文件路径的前缀，如果留空，会在远程服务器上创建对应的目录</td>
+</tr>
+<tr>
+<td>远端目录</td>
+<td>jenkins_web/</td>
+<td>远程服务器上的项目目录，该目录会被创建在Publish over SSH配置的远程根目录中(/usr/local/applications/)</td>
+</tr>
+<tr>
+<td>执行命令</td>
+<td>cd /usr/local/applications/jenkins_web/ <br> nohup /usr/local/jdk8/bin/java -jar jenkins-0.0.1-SNAPSHOT.jar &gt; nohup.out &amp; 2&gt;&amp;1 &amp;</td>
+<td>文件传输到远程服务器后执行的命令</td>
+</tr>
+</tbody>
+</table>
+<p>在打包时输入自定义的参数<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8t39dehsaj211z0ocjsn.jpg" alt="maven打包" loading="lazy"><br>
+然后保存即可。</p>
+<p>最后，点击 立即构建 ，等待构建完成。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8t3fxrumdj213d0crdhi.jpg" alt="" loading="lazy"><br>
+访问Web程序的端口，尝试是否能请求成功。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[java类加载器与双亲委派模型]]></title>
+        <id>https://Slice1129.github.io/post/java-lei-jia-zai-qi-yu-shuang-qin-wei-pai-mo-xing/</id>
+        <link href="https://Slice1129.github.io/post/java-lei-jia-zai-qi-yu-shuang-qin-wei-pai-mo-xing/">
+        </link>
+        <updated>2019-11-01T03:09:35.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="1双亲委派原理">1.双亲委派原理</h1>
+<h2 id="11-什么是双亲委派">1.1 什么是双亲委派</h2>
+<p>简单说，类加载器就是根据指定的全限定名称将class文件加载到jvm中，装载class对象。</p>
+<blockquote>
+<ul>
+<li>启动类加载器(Bootstrap ClassLoader)：这个加载器不是一个java类，而是底层用C++实现的，负责将存放在JAVA_HOME/lib下的类库加载，如rt.jar。因此，启动类加载器不属于Java类库，无法被Java程序直接引用，用户在编辑自定义类加载器时，如果需要把加载请求委托给启动类载器，那直接使用null替代即可。</li>
+<li>扩展类加载器(Extension ClassLoader)：负责加载JAVA_HOME/lib/ext/目录或java.ext.dirs系统变量所指定的路径中的所有类库。</li>
+<li>应用类加载器(Application ClassLoader)：负责加载用户类路径(classpath)上指定的类库。一般情况下，如果我们没有自定义类加载器，默认的就是这个加载器。</li>
+</ul>
+</blockquote>
+<p>双亲委派过程：当一个类加载器收到加载请求时，它不会自己先尝试加载这个类，而是把请求委派给父加载器完成。每个类加载器都是如此，只有当父类载器找不到指定类时（即ClassNotFoundException），子加载器才会尝试自己去加载。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8ieh8ti0wj20oe0fstb2.jpg" alt="" loading="lazy"></p>
+<h2 id="12-为什么需要双亲委派模型">1.2 为什么需要双亲委派模型？</h2>
+<p>为什么需要双亲委派模型呢？</p>
+<blockquote>
+<p>黑客自定义一个<code>java.lang.String</code>类，该String类具有系统的String类一样的功能，只是在某个函数稍作修改。比如equals函数，这个函数经常使用，如果在这个函数中，加入一些“病毒代码”。并通过自定义类加载器加载到JVM中。此时，如果没有使用双亲委派模型，那JVM就可能误认为黑客自定义的<code>java.lang.String</code>类是系统的String类，从而导致“病毒代码”被执行。</p>
+</blockquote>
+<p>而有了双亲委派模型，黑客自定义的<code>java.lang.String</code>永远不会被加载到内存中。因为首先是最顶端类加载器加载系统的<code>java.lang.String</code>类，最终自定义的类加载器无法加载<code>java.lang.String</code>类。</p>
+<p>或许你会想，我在定义的类加载器里面强制加载自定义的java.lang.String类，不去通过调用父加载器不就好了吗？的确，这样是可行的。但是，在JVM中，判断一个对象是否是某个类型时，如果该对象的实际类型与带比较类型的类加载器不同，那么会返回false。</p>
+<p>举个栗子：</p>
+<blockquote>
+<p>ClassLoader1、ClassLoader2都加载java.lang.String类，对应Class1,、Class2对象。那么Class1对象不属于ClassLoader2对象加载的java.lang.String类型。</p>
+</blockquote>
+<h1 id="2自定义类加载器">2.自定义类加载器</h1>
+<ul>
+<li>显示调用继承来的loadClass()方法来加载类，此时在loadClass()方法内部将执行双亲委派的逻辑。如果父类加载器没能成功加载类，则调用Overload父类的findClass()方法来实现自定义加载器的加载逻辑：<br>
+将要加载的类的.class文件中内容输入到byte[]数据中;<br>
+调用父类(ClassLoader)的defineClass()方法完成真正的类加载。</li>
+</ul>
+<pre><code>public class ClassLoaderCustom extends ClassLoader {
+
+    private String path;
+
+    public ClassLoaderCustom(String path) {
+        this.path = path;
+    }
+
+    @Override
+    protected Class&lt;?&gt; findClass(String name) throws ClassNotFoundException {
+        System.out.println(&quot;OK&quot;);
+        try (
+                FileInputStream inputStream = new FileInputStream(path);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ) {
+            int length;
+            while ((length = inputStream.read()) != -1) {
+                outputStream.write(length);
+            }
+
+            byte[] bytes = outputStream.toByteArray();
+            System.out.println(&quot;inputStream.getChannel().size() = &quot; + inputStream.getChannel().size());
+            System.out.println(&quot;bytes.length = &quot; + bytes.length);
+            return this.defineClass(name, bytes, 0, bytes.length);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static void main(String[] args) throws Exception {
+        ClassLoaderCustom loader = new ClassLoaderCustom(&quot;D://PersonFuck.class&quot;);
+        Class&lt;?&gt; loadClass = loader.loadClass(&quot;com.fuck.PersonFuck&quot;);
+        System.out.println(loadClass.newInstance().toString());
+    }
+}
+</code></pre>
+<h1 id="3classloader中重要方法解析">3.ClassLoader中重要方法解析</h1>
+<pre><code>public Class&lt;?&gt; loadClass(String name) throws ClassNotFoundException {
+        return loadClass(name, false);
+}
+</code></pre>
+<p>封装了双亲委派模型：先交给父类加载，父类如果没有加载到再由自己加载，所以自定义类加载器不要Overload此方法，否则会破坏双亲委派。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[jmap使用记录]]></title>
+        <id>https://Slice1129.github.io/post/jmap-shi-yong-ji-lu/</id>
+        <link href="https://Slice1129.github.io/post/jmap-shi-yong-ji-lu/">
+        </link>
+        <updated>2019-10-30T03:51:12.000Z</updated>
+        <content type="html"><![CDATA[<p>jmap -heap 1234 查看进程号为1234的Java程序的整个jvm内存状态<br>
+jmap -histo 1234 查找进程号为1234的java程序的jvm堆中对象详细占用情况<br>
+jmap -dump:format=b,file=/my.dump 1234  导出1234进程的java程序的整个JVM信息</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[图解TCP协议中的三次握手]]></title>
+        <id>https://Slice1129.github.io/post/tu-jie-tcp-xie-yi-zhong-de-san-ci-wo-shou/</id>
+        <link href="https://Slice1129.github.io/post/tu-jie-tcp-xie-yi-zhong-de-san-ci-wo-shou/">
+        </link>
+        <updated>2019-09-26T05:46:47.000Z</updated>
+        <content type="html"><![CDATA[<p>TCP全称（Transmission Control Protocol）传输控制协议。<br>
+TCP是主机对主机层的传输控制协议，提供可靠的连接服务，采用三次握手确定建立一个连接：<br>
+位码即TCP标志位，有6种标示</p>
+<ul>
+<li>SYN（synchronous）建立联机</li>
+<li>ACK（acknowledgement）确认</li>
+<li>PSH（push）传送</li>
+<li>FIN（finish）结束</li>
+<li>RST（reset）重置</li>
+<li>URG（urgent）紧急<br>
+其中Sequence number为顺序号码，Acknowledge number为确认号码。<br>
+先来看看如何建立连接的：<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g7cvruwt57j20nb0g07fa.jpg" alt="" loading="lazy"><br>
+实际上是这样的，看红色框：<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g7cw9yznt2j21hc0n8wha.jpg" alt="" loading="lazy"><br>
+第一次握手：<br>
+客户端发送SYN=1，Seq=(x=0，这里为了方便图中是0，其实是随机数)到服务器，服务器由SYN=1知道客户端要求建立联机。<br>
+第二次握手：服务器端发送SYN=1，ACK=1，Seq=0(随机数y)，Ack=1(x+1)到客户端。<br>
+第三次握手：客户端收到Ack后检查是否正确，即第一次发送的Seq number+1，如果正确，客户端会发送ACK=1，Seq=1(x+1)，Ack=1(y+1)，当服务器收到Seq和Ack后则连接建立成功。</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[系统CPU飙高排查]]></title>
+        <id>https://Slice1129.github.io/post/xi-tong-cpu-biao-gao-pai-cha/</id>
+        <link href="https://Slice1129.github.io/post/xi-tong-cpu-biao-gao-pai-cha/">
+        </link>
+        <updated>2019-09-24T07:41:14.000Z</updated>
+        <content type="html"><![CDATA[<p>发现接口请求无反应，登上服务器查看发现CPU一直居高不下。<br>
+直接敲</p>
+<pre><code>top
+</code></pre>
+<p><img src="https://ww1.sinaimg.cn/large/b828643bgy1g7ankw1e5dj218p0qxwi3.jpg" alt="图片1" loading="lazy"><br>
+我们发现PID为9698的进程占用了99.9的CPU，接下来查看该进程里面哪个线程存在高运算。</p>
+<pre><code>top -Hp 9698
+</code></pre>
+<p><img src="https://ww1.sinaimg.cn/large/b828643bgy1g7anqbre9aj21950m9adu.jpg" alt="图片2" loading="lazy"><br>
+图片显示PID为9720的线程占用的比较多，我们先将转成16进制，稍后在jstack中方便查找。</p>
+<pre><code>printf &quot;%x\n&quot; 9720
+25f8
+</code></pre>
+<p>下面使用jstack导出运行时的日志。</p>
+<pre><code>jstack 9698 &gt;&gt; 9698cpu.log
+</code></pre>
+<p>或者直接查看</p>
+<pre><code>jstack 9698
+</code></pre>
+<p><img src="https://ww1.sinaimg.cn/large/b828643bgy1g7ao2y4cepj218y0qiag7.jpg" alt="图片3" loading="lazy"><br>
+我们找到了UserController的第55行代码一直占用CPU。我们打开IDEA查看<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g7ao6iunghj21ee0bxjtk.jpg" alt="图片4" loading="lazy"><br>
+我们找到了罪魁祸首。<br>
+O(∩_∩)O哈哈~，其实这些只是为了测试而已。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[AtomicInteger CAS]]></title>
+        <id>https://Slice1129.github.io/post/atomicinteger-cas/</id>
+        <link href="https://Slice1129.github.io/post/atomicinteger-cas/">
+        </link>
+        <updated>2019-08-12T02:20:36.000Z</updated>
+        <content type="html"><![CDATA[<pre><code>public class Test1 {
+
+    public static void main(String[] args) {
+        AtomicInteger count = new AtomicInteger(99);
+        count.addAndGet(5);
+    }
+}
+</code></pre>
+<p>当调用addAndGet方法时，AtomicInteger会调用unsafe.getAndAddInt(this,valueOffset,delta)+delta，<br>
+首先调用getIntVolatile获取当内存中的值，然后compareAndSwapInt</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[CentOS 6、7下pptp vpn一键安装脚本]]></title>
+        <id>https://Slice1129.github.io/post/centos-67-xia-pptp-vpn-yi-jian-an-zhuang-jiao-ben/</id>
+        <link href="https://Slice1129.github.io/post/centos-67-xia-pptp-vpn-yi-jian-an-zhuang-jiao-ben/">
+        </link>
+        <updated>2019-07-23T02:46:48.000Z</updated>
+        <content type="html"><![CDATA[<p>（本文的命令基于centos 6.5，如是其他版本，可能命令有些许不同，但是同一个意思）</p>
+<p>下载一键脚本：</p>
+<p>wget http://mirrors.linuxeye.com/scripts/vpn_centos.sh</p>
+<p>给予脚本权限</p>
+<p>chmod a+x vpn_centos.sh</p>
+<p>运行脚本，安装</p>
+<p>bash vpn_centos.sh</p>
+<p>之后按照提示设置账号和密码即可。<br>
+自定义操作：</p>
+<p>更改本地IP地址池：</p>
+<p>编辑：</p>
+<p>vim /etc/pptpd.conf</p>
+<p>更改PPTP的账号、密码</p>
+<p>编辑：</p>
+<p>vim /etc/ppp/chap-secrets</p>
+<p>更改DNS设置</p>
+<p>编辑：</p>
+<p>vim /etc/ppp/options.pptpd</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[修改Cetnos7 ssh端口]]></title>
+        <id>https://Slice1129.github.io/post/xiu-gai-cetnos7-ssh-duan-kou/</id>
+        <link href="https://Slice1129.github.io/post/xiu-gai-cetnos7-ssh-duan-kou/">
+        </link>
+        <updated>2019-07-19T01:41:59.000Z</updated>
+        <content type="html"><![CDATA[<pre><code>vi /etc/ssh/sshd_config
+#port 22 ##修改成自己的端口，并删除掉注释符号
+</code></pre>
+<p>修改保存 sshd_config 文件后重启 sshd 服务：</p>
+<pre><code class="language-bash">systemctl restart sshd
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[ReentrantLock]]></title>
+        <id>https://Slice1129.github.io/post/reentrantlock/</id>
+        <link href="https://Slice1129.github.io/post/reentrantlock/">
+        </link>
+        <updated>2019-07-15T09:20:48.000Z</updated>
+        <content type="html"><![CDATA[<pre><code> ReentrantLock lock = new ReentrantLock();
+ 
+        final void lock() {
+            if (compareAndSetState(0, 1))
+                setExclusiveOwnerThread(Thread.currentThread());
+            else
+                acquire(1);
+        }
+				
+			 //如果已经调用过lock。再调用lock会执行下面的方法
+        final boolean nonfairTryAcquire(int acquires) {
+            final Thread current = Thread.currentThread();
+            int c = getState();
+            if (c == 0) {
+                if (compareAndSetState(0, acquires)) {
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            }
+            else if (current == getExclusiveOwnerThread()) {
+                int nextc = c + acquires;
+                if (nextc &lt; 0) // overflow
+                    throw new Error(&quot;Maximum lock count exceeded&quot;);
+                setState(nextc);
+                return true;
+            }
+            return false;
+        }
+				
+				//释放锁
+        protected final boolean tryRelease(int releases) {
+            int c = getState() - releases;
+            if (Thread.currentThread() != getExclusiveOwnerThread())
+                throw new IllegalMonitorStateException();
+            boolean free = false;
+            if (c == 0) {
+                free = true;
+                setExclusiveOwnerThread(null);
+            }
+            setState(c);
+            return free;
+        }				
+</code></pre>
+<p>实例化对象时，会在构造器中创建一个NonfairSync对象，重写了lock与tryAcquire方法。<br>
+调用lock.lock()方法时，state默认为0，调用CAS将其变成1，如果成功，就将当前的线程赋值给exclusiveOwnerThread，否则调用acquire方法。<br>
+如果当前线程等于exclusiveOwnerThread，则获取state值，并+1，再写回并返回true。如果是其它线程，则返回false。因为是可重入锁。<br>
+lock.unlock();<br>
+获取当前线程，如果不等于exclusiveOwnerThread，直接抛出异常。然后将state-1，如果此时state值为0，则释放锁，否则将state=state-1。</p>
+]]></content>
+    </entry>
+</feed>

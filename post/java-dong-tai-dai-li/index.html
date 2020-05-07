@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+<meta name="referrer" content="same-origin">
+<title>Java 动态代理（Mybatis mapper原理） | Demo</title>
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://Slice1129.github.io/favicon.ico?v=1588832966912">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://Slice1129.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g48m6n592dj20jg0ykdhx.jpg');">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://Slice1129.github.io">
+        <img src="https://Slice1129.github.io/images/avatar.png?v=1588832966912" class="site-logo">
+        <h1 class="site-title">Demo</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://Slice1129.github.io" target="_blank">Slice1129</a> | <a class="rss" href="https://Slice1129.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Java 动态代理（Mybatis mapper原理）</h2>
+            <div class="post-date">2019-06-24</div>
+            
+              <div class="feature-container" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g4c0tvthcvj20qo0f0myj.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <p>假设我们有这样一个接口。</p>
+<pre><code class="language-java">public interface PeopleAction {
+
+    String say(String content);
+
+    String smile(String type);
+}
+</code></pre>
+<p>并且还有一个实现类</p>
+<pre><code>public class PeopleActionImpl implements PeopleAction {
+    @Override
+    public String say(String content) {
+        System.out.println(&quot;i can say &quot; + content);
+        return content;
+    }
+
+    @Override
+    public String smile(String type) {
+        System.out.println(&quot;i smile &quot; + type);
+        return type;
+    }
+}
+</code></pre>
+<p>如果我想在say方法执行之前和执行之后做一些相应的操作，除了静态代理之外，那就是动态代理，动态代理在某些程度上简化了一些操作。<br>
+首先，我们定义一个代理类PeopleActionProxy，需要实现 InvocationHandler，并传入实例，在实例调用方法前后做些额外的操作。</p>
+<pre><code>public class PeopleActionProxy implements InvocationHandler {
+
+    private Object target;
+
+    public PeopleActionProxy(Object target) {
+        this.target = target;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println(&quot;invoke before &quot; + target.getClass().getName() + &quot;.&quot; + method.getName() + &quot;(&quot; + Arrays.toString(args) + &quot;)&quot;);
+        Object invoke = method.invoke(target, args);
+        System.out.println(&quot;invoke after&quot;);
+        return invoke;
+    }
+
+    public Object buildProxy() {
+        return Proxy.newProxyInstance(target.getClass().getClassLoader(),
+                target.getClass().getInterfaces(), this);
+    }
+
+}
+</code></pre>
+<p>实例化需要代理的对象和代理类，将代理对象传递给代理类，并初始化Proxy.newProxyInstance方法。后期所有调用对象的方法，都会进入代理类的invoke，做一些行为判断等操作。</p>
+<pre><code>public class PeopleActionTest {
+
+    public static void main(String[] args) {
+        PeopleAction peopleAction = new PeopleActionImpl();
+        PeopleActionProxy proxy = new PeopleActionProxy(peopleAction);
+
+        PeopleAction peopleActionProxy = (PeopleAction) proxy.buildProxy();
+
+        String hello = peopleActionProxy.say(&quot;Hello&quot;);
+        System.out.println(&quot;say 返回结果&quot; + hello);
+
+        System.out.println(&quot;----------------------------------&quot;);
+
+        String smile = peopleActionProxy.smile(&quot;哈哈笑&quot;);
+        System.out.println(&quot;smile 返回结果&quot; + smile);
+    }
+}
+</code></pre>
+<p>前段时间看了Mybatis的部分源码，发现Mybatis在初始化Mapper，会先获取到namespace，然后获取所有方法进行代理，当调用方法的时候拦截方法并去执行相应的SQL语句，然后返回给客户端，下面是一个简单的例子。<br>
+首先，我们定义一个实体类。</p>
+<pre><code>public class Student {
+
+    private String name;
+
+    private int age;
+
+    public Student() {
+    }
+
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return &quot;Student{&quot; +
+                &quot;name='&quot; + name + '\'' +
+                &quot;, age=&quot; + age +
+                '}';
+    }
+}
+</code></pre>
+<p>再定义我们熟悉的Mapper（也就是Dao类）</p>
+<pre><code>public interface StudentMapper {
+
+    int save(Student student);
+
+    Student getByName(String name);
+
+}
+</code></pre>
+<p>然后是我们代理类，这里简单示范一下就根据方法名返回不同的值。</p>
+<pre><code>public class MybatisProxy implements InvocationHandler {
+
+    private Class&lt;?&gt; mapper;
+
+    public MybatisProxy(Class&lt;?&gt; mapper) {
+        this.mapper = mapper;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println(&quot;调用了&quot; + mapper.getCanonicalName() + &quot;.&quot; + method.getName() + &quot;(&quot; + Arrays.toString(args) + &quot;)&quot;);
+        if (&quot;getByName&quot;.equals(method.getName())) {
+            return new Student(&quot;Demo&quot;, 22);
+        }
+        return 1;
+    }
+
+    public Object buildProxy() {
+        ClassLoader classLoader = mapper.getClassLoader();
+        Class&lt;?&gt;[] interfaces = new Class[]{mapper};
+        return Proxy.newProxyInstance(classLoader, interfaces, this);
+    }
+
+}
+</code></pre>
+<p>开始跑起来。</p>
+<pre><code>public class StudentTest {
+
+    public static void main(String[] args) {
+        MybatisProxy mybatisProxy = new MybatisProxy(StudentMapper.class);
+
+        StudentMapper studentMapper = (StudentMapper) mybatisProxy.buildProxy();
+        int count = studentMapper.save(new Student(&quot;Demos&quot;, 22));
+        System.out.println(&quot;保存结果 &quot; + count);
+
+        System.out.println();
+
+        Student demo = studentMapper.getByName(&quot;Demo&quot;);
+        System.out.println(demo);
+    }
+}
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://Slice1129.github.io/tag/qNOGriHWV/" class="tag">
+                    Java
+                  </a>
+                
+                  <a href="https://Slice1129.github.io/tag/wkE8_2akE/" class="tag">
+                    Mybatis
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://Slice1129.github.io/post/shen-ru-li-jie-mybatis/">
+                  <h3 class="post-title">
+                    阅读MyBatis源码
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '517165babf089deae207',
+        clientSecret: '2f627ac9b9bcac92cb8399a31a04cd9a644376fe',
+        repo: 'Slice1129.github.io',
+        owner: 'Slice1129',
+        admin: ['Slice1129'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

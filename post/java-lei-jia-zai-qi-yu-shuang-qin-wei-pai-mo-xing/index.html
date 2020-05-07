@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+<meta name="referrer" content="same-origin">
+<title>java类加载器与双亲委派模型 | Demo</title>
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://Slice1129.github.io/favicon.ico?v=1588832966912">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://Slice1129.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g48m6n592dj20jg0ykdhx.jpg');">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://Slice1129.github.io">
+        <img src="https://Slice1129.github.io/images/avatar.png?v=1588832966912" class="site-logo">
+        <h1 class="site-title">Demo</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://Slice1129.github.io" target="_blank">Slice1129</a> | <a class="rss" href="https://Slice1129.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">java类加载器与双亲委派模型</h2>
+            <div class="post-date">2019-11-01</div>
+            
+              <div class="feature-container" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g8id64lx6zj20qo0goq7p.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <h1 id="1双亲委派原理">1.双亲委派原理</h1>
+<h2 id="11-什么是双亲委派">1.1 什么是双亲委派</h2>
+<p>简单说，类加载器就是根据指定的全限定名称将class文件加载到jvm中，装载class对象。</p>
+<blockquote>
+<ul>
+<li>启动类加载器(Bootstrap ClassLoader)：这个加载器不是一个java类，而是底层用C++实现的，负责将存放在JAVA_HOME/lib下的类库加载，如rt.jar。因此，启动类加载器不属于Java类库，无法被Java程序直接引用，用户在编辑自定义类加载器时，如果需要把加载请求委托给启动类载器，那直接使用null替代即可。</li>
+<li>扩展类加载器(Extension ClassLoader)：负责加载JAVA_HOME/lib/ext/目录或java.ext.dirs系统变量所指定的路径中的所有类库。</li>
+<li>应用类加载器(Application ClassLoader)：负责加载用户类路径(classpath)上指定的类库。一般情况下，如果我们没有自定义类加载器，默认的就是这个加载器。</li>
+</ul>
+</blockquote>
+<p>双亲委派过程：当一个类加载器收到加载请求时，它不会自己先尝试加载这个类，而是把请求委派给父加载器完成。每个类加载器都是如此，只有当父类载器找不到指定类时（即ClassNotFoundException），子加载器才会尝试自己去加载。<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8ieh8ti0wj20oe0fstb2.jpg" alt="" loading="lazy"></p>
+<h2 id="12-为什么需要双亲委派模型">1.2 为什么需要双亲委派模型？</h2>
+<p>为什么需要双亲委派模型呢？</p>
+<blockquote>
+<p>黑客自定义一个<code>java.lang.String</code>类，该String类具有系统的String类一样的功能，只是在某个函数稍作修改。比如equals函数，这个函数经常使用，如果在这个函数中，加入一些“病毒代码”。并通过自定义类加载器加载到JVM中。此时，如果没有使用双亲委派模型，那JVM就可能误认为黑客自定义的<code>java.lang.String</code>类是系统的String类，从而导致“病毒代码”被执行。</p>
+</blockquote>
+<p>而有了双亲委派模型，黑客自定义的<code>java.lang.String</code>永远不会被加载到内存中。因为首先是最顶端类加载器加载系统的<code>java.lang.String</code>类，最终自定义的类加载器无法加载<code>java.lang.String</code>类。</p>
+<p>或许你会想，我在定义的类加载器里面强制加载自定义的java.lang.String类，不去通过调用父加载器不就好了吗？的确，这样是可行的。但是，在JVM中，判断一个对象是否是某个类型时，如果该对象的实际类型与带比较类型的类加载器不同，那么会返回false。</p>
+<p>举个栗子：</p>
+<blockquote>
+<p>ClassLoader1、ClassLoader2都加载java.lang.String类，对应Class1,、Class2对象。那么Class1对象不属于ClassLoader2对象加载的java.lang.String类型。</p>
+</blockquote>
+<h1 id="2自定义类加载器">2.自定义类加载器</h1>
+<ul>
+<li>显示调用继承来的loadClass()方法来加载类，此时在loadClass()方法内部将执行双亲委派的逻辑。如果父类加载器没能成功加载类，则调用Overload父类的findClass()方法来实现自定义加载器的加载逻辑：<br>
+将要加载的类的.class文件中内容输入到byte[]数据中;<br>
+调用父类(ClassLoader)的defineClass()方法完成真正的类加载。</li>
+</ul>
+<pre><code>public class ClassLoaderCustom extends ClassLoader {
+
+    private String path;
+
+    public ClassLoaderCustom(String path) {
+        this.path = path;
+    }
+
+    @Override
+    protected Class&lt;?&gt; findClass(String name) throws ClassNotFoundException {
+        System.out.println(&quot;OK&quot;);
+        try (
+                FileInputStream inputStream = new FileInputStream(path);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ) {
+            int length;
+            while ((length = inputStream.read()) != -1) {
+                outputStream.write(length);
+            }
+
+            byte[] bytes = outputStream.toByteArray();
+            System.out.println(&quot;inputStream.getChannel().size() = &quot; + inputStream.getChannel().size());
+            System.out.println(&quot;bytes.length = &quot; + bytes.length);
+            return this.defineClass(name, bytes, 0, bytes.length);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static void main(String[] args) throws Exception {
+        ClassLoaderCustom loader = new ClassLoaderCustom(&quot;D://PersonFuck.class&quot;);
+        Class&lt;?&gt; loadClass = loader.loadClass(&quot;com.fuck.PersonFuck&quot;);
+        System.out.println(loadClass.newInstance().toString());
+    }
+}
+</code></pre>
+<h1 id="3classloader中重要方法解析">3.ClassLoader中重要方法解析</h1>
+<pre><code>public Class&lt;?&gt; loadClass(String name) throws ClassNotFoundException {
+        return loadClass(name, false);
+}
+</code></pre>
+<p>封装了双亲委派模型：先交给父类加载，父类如果没有加载到再由自己加载，所以自定义类加载器不要Overload此方法，否则会破坏双亲委派。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://Slice1129.github.io/tag/qNOGriHWV/" class="tag">
+                    Java
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://Slice1129.github.io/post/jmap-shi-yong-ji-lu/">
+                  <h3 class="post-title">
+                    jmap使用记录
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '517165babf089deae207',
+        clientSecret: '2f627ac9b9bcac92cb8399a31a04cd9a644376fe',
+        repo: 'Slice1129.github.io',
+        owner: 'Slice1129',
+        admin: ['Slice1129'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

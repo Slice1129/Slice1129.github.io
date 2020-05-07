@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+<meta name="referrer" content="same-origin">
+<title>数据库三大范式 | Demo</title>
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://Slice1129.github.io/favicon.ico?v=1588832966912">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://Slice1129.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g48m6n592dj20jg0ykdhx.jpg');">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://Slice1129.github.io">
+        <img src="https://Slice1129.github.io/images/avatar.png?v=1588832966912" class="site-logo">
+        <h1 class="site-title">Demo</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://Slice1129.github.io" target="_blank">Slice1129</a> | <a class="rss" href="https://Slice1129.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">数据库三大范式</h2>
+            <div class="post-date">2019-07-03</div>
+            
+              <div class="feature-container" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g4mlkr4fvmj20qo0f0n2i.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <h2 id="概述">概述</h2>
+<p>在进行数据库设计时，应该遵循三大原则，也就是我们通常所说的三大范式，即第一范式要求确保表中每列的原子性，也就是不可拆分；第二范式要求表中每列与主键相关，而不能只与主键的某部分相关（联合索引），主键列与非主键列遵循完全函数依赖关系，也就是完全依赖；第三范式确保主键列之间没有传递函数依赖关系，也就是消除传递依赖。</p>
+<h3 id="第一范式">第一范式</h3>
+<p>第一种表设计<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4mnr74l7ej20l903yq2t.jpg" alt="" loading="lazy"><br>
+第二种表设计<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4mnrd36rwj20l903fglj.jpg" alt="" loading="lazy"><br>
+第一种表设计不满足第一范式，因为region列不具有原子性，能拆分成省份、市和具体地址。</p>
+<h3 id="第二范式">第二范式</h3>
+<blockquote>
+<p>需求描述：设计一个订单信息表，订单有多种商品，将订单编号和商品编号作为联合主键。</p>
+</blockquote>
+<p>第一种表设计<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4mo0rw466j20ir048q2y.jpg" alt="" loading="lazy"><br>
+第二种表设计<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4mo0rw77bj20a30fuaa9.jpg" alt="" loading="lazy"><br>
+第一种表设计不满足第二范式，订单编号与商品编号作为联合主键，由于商品名称、单位、价格这几列只与商品编号有关，与订单编号无关，因此与主键（联合主键）无关，违反第二范式。<br>
+第二种表设计满足第二范式，把第一种表设计进行拆分，把商品信息分离到另一个表中，把订单项目表也分离到另一个表中。</p>
+<h3 id="第三范式">第三范式</h3>
+<blockquote>
+<p>需求描述：<br>
+需要在数据库中存储如下信息<br>
+学生编号，学生卡号，用户 ID号，操作员级别，操作日期，操作时间。</p>
+</blockquote>
+<p>第一种表设计<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4moldls97j20h001ddfp.jpg" alt="" loading="lazy"><br>
+第二种表设计<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1g4moldndcwj20kc085dhb.jpg" alt="" loading="lazy"><br>
+第一种表设计不满足第三范式，在表中，一个UserID能确定一个UserLevel。这样，UserID依赖于StudengNo和CardNo，而UserLevel依赖于UserID，这就导致了传递依赖。</p>
+<p>要求一个数据库的表中不包含在其他表中已经存在的非主键的字段。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://Slice1129.github.io/tag/vaGOtSZSz/" class="tag">
+                    MySQL
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://Slice1129.github.io/post/mysql57-yi-shang-ban-ben-sql_modeonly_full_group_by-wen-ti/">
+                  <h3 class="post-title">
+                    MYSQL5.7以上版本sql_mode=only_full_group_by问题
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '517165babf089deae207',
+        clientSecret: '2f627ac9b9bcac92cb8399a31a04cd9a644376fe',
+        repo: 'Slice1129.github.io',
+        owner: 'Slice1129',
+        admin: ['Slice1129'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

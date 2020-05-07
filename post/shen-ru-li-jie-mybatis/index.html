@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+<meta name="referrer" content="same-origin">
+<title>阅读MyBatis源码 | Demo</title>
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://Slice1129.github.io/favicon.ico?v=1588832966912">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://Slice1129.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g48m6n592dj20jg0ykdhx.jpg');">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://Slice1129.github.io">
+        <img src="https://Slice1129.github.io/images/avatar.png?v=1588832966912" class="site-logo">
+        <h1 class="site-title">Demo</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://Slice1129.github.io" target="_blank">Slice1129</a> | <a class="rss" href="https://Slice1129.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">阅读MyBatis源码</h2>
+            <div class="post-date">2019-06-21</div>
+            
+              <div class="feature-container" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g48k8dw95qj20qo0go0wy.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <p>在日常使用Mybatis过程中，大多数都是SpringBoot全家桶，遇到问题时通过搜索引擎解决，却不知道其根本原因。现在有时间稍微看下Mybatis的工作原理（<a href="https://github.com/Slice1129/MyBatisTutorial">例子源码</a>）。</p>
+<pre><code>package com.test.main;
+
+import com.test.dao.PersonInfoDao;
+import com.test.domain.PersonInfo;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.InputStream;
+
+/**
+ * @author: Slice1129
+ * @date: 2019/6/21 15:14
+ */
+public class Startup {
+
+    private SqlSessionFactory sqlSessionFactory;
+
+    @Before
+    public void init() {
+        try {
+            String resources = &quot;mybatis-config.xml&quot;;
+            InputStream inputStream = Resources.getResourceAsStream(resources);
+            sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void main() {
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+        PersonInfoDao personInfoDao = sqlSession.getMapper(PersonInfoDao.class);
+
+        PersonInfo personInfo = new PersonInfo(
+                System.currentTimeMillis(), &quot;Demo&quot;, &quot;DemoDad&quot;, System.currentTimeMillis()
+        );
+
+        personInfoDao.save(personInfo);
+
+        sqlSession.commit();
+
+        sqlSession.close();
+
+    }
+
+    @Test
+    public void getPerson() {
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+        PersonInfoDao mapper = sqlSession.getMapper(PersonInfoDao.class);
+        PersonInfo personInfo = mapper.getById(1);
+        System.out.println(personInfo);
+        sqlSession.close();
+    }
+
+}
+
+</code></pre>
+<h2 id="1获取-inputstream">1.获取 InputStream</h2>
+<p>通过ClassLoader的getResourceAsStream方法可以返回指定资源的输入流，指定的资源文件位于当前路径或者classpath的路径下。<br>
+跟进源码，发现Resources并不直接操作ClassLoader，而是自定义了一个类加载器ClassLoaderWrapper，里面内置了5个加载器</p>
+<ul>
+<li>classLoader 从外部传递过来的</li>
+<li>defaultClassLoader 默认的，这个没有发现在哪里初始化过</li>
+<li>Thread.currentThread().getContextClassLoader() 当前线程的</li>
+<li>getClass().getClassLoader() 当前对象的</li>
+<li>systemClassLoader 应用程序类加载器</li>
+</ul>
+<p>mybatis会循环遍历类加载器，分别会以相对路径和绝对路径获取资源，一旦获取到立即返回。</p>
+<pre><code>  InputStream getResourceAsStream(String resource, ClassLoader[] classLoader) {
+    for (ClassLoader cl : classLoader) {
+      if (null != cl) {
+
+        // try to find the resource as passed
+        InputStream returnValue = cl.getResourceAsStream(resource);
+
+        // now, some class loaders want this leading &quot;/&quot;, so we'll add it and try again if we didn't find the resource
+        if (null == returnValue) {
+          returnValue = cl.getResourceAsStream(&quot;/&quot; + resource);
+        }
+
+        if (null != returnValue) {
+          return returnValue;
+        }
+      }
+    }
+    return null;
+  }
+</code></pre>
+<h2 id="2获取sqlsessionfactory">2.获取SqlSessionFactory</h2>
+<p>SqlSessionFactoryBuilder.build方法如下</p>
+<pre><code>  public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
+    try {
+      XMLConfigBuilder parser = new XMLConfigBuilder(inputStream, environment, properties);
+      return build(parser.parse());
+    } catch (Exception e) {
+      throw ExceptionFactory.wrapException(&quot;Error building SqlSession.&quot;, e);
+    } finally {
+      ErrorContext.instance().reset();
+      try {
+        inputStream.close();
+      } catch (IOException e) {
+        // Intentionally ignore. Prefer previous error.
+      }
+    }
+  }
+</code></pre>
+<p>在实例化XMLConfigBuilder的过程中</p>
+<ul>
+<li>实例化xml解析器</li>
+<li>实例化Configuration</li>
+</ul>
+<pre><code>  public XMLConfigBuilder(InputStream inputStream, String environment, Properties props) {
+    this(new XPathParser(inputStream, true, props, new XMLMapperEntityResolver()), environment, props);
+  }
+
+  private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
+    super(new Configuration());
+    ErrorContext.instance().resource(&quot;SQL Mapper Configuration&quot;);
+    this.configuration.setVariables(props);
+    this.parsed = false;
+    this.environment = environment;
+    this.parser = parser;
+  }
+</code></pre>
+<p>Configuration类初始化了mybatis所需基本的配置信息。</p>
+<pre><code>  protected Environment environment;
+
+  protected boolean safeRowBoundsEnabled;
+  protected boolean safeResultHandlerEnabled = true;
+  protected boolean mapUnderscoreToCamelCase;
+  protected boolean aggressiveLazyLoading;
+  protected boolean multipleResultSetsEnabled = true;
+  protected boolean useGeneratedKeys;
+  protected boolean useColumnLabel = true;
+  protected boolean cacheEnabled = true;
+  protected boolean callSettersOnNulls;
+  protected boolean useActualParamName = true;
+  protected boolean returnInstanceForEmptyRow;
+
+  protected String logPrefix;
+  protected Class&lt;? extends Log&gt; logImpl;
+  protected Class&lt;? extends VFS&gt; vfsImpl;
+  protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
+  protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
+  protected Set&lt;String&gt; lazyLoadTriggerMethods = new HashSet&lt;&gt;(Arrays.asList(&quot;equals&quot;, &quot;clone&quot;, &quot;hashCode&quot;, &quot;toString&quot;));
+  protected Integer defaultStatementTimeout;
+  protected Integer defaultFetchSize;
+  protected ExecutorType defaultExecutorType = ExecutorType.SIMPLE;
+  protected AutoMappingBehavior autoMappingBehavior = AutoMappingBehavior.PARTIAL;
+  protected AutoMappingUnknownColumnBehavior autoMappingUnknownColumnBehavior = AutoMappingUnknownColumnBehavior.NONE;
+
+  protected Properties variables = new Properties();
+  protected ReflectorFactory reflectorFactory = new DefaultReflectorFactory();
+  protected ObjectFactory objectFactory = new DefaultObjectFactory();
+  protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
+
+  protected boolean lazyLoadingEnabled = false;
+  protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
+
+  protected String databaseId;
+  /**
+   * Configuration factory class.
+   * Used to create Configuration for loading deserialized unread properties.
+   *
+   * @see &lt;a href='https://code.google.com/p/mybatis/issues/detail?id=300'&gt;Issue 300 (google code)&lt;/a&gt;
+   */
+  protected Class&lt;?&gt; configurationFactory;
+
+  protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
+  protected final InterceptorChain interceptorChain = new InterceptorChain();
+  protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
+  protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
+  protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
+
+  protected final Map&lt;String, MappedStatement&gt; mappedStatements = new StrictMap&lt;MappedStatement&gt;(&quot;Mapped Statements collection&quot;)
+      .conflictMessageProducer((savedValue, targetValue) -&gt;
+          &quot;. please check &quot; + savedValue.getResource() + &quot; and &quot; + targetValue.getResource());
+  protected final Map&lt;String, Cache&gt; caches = new StrictMap&lt;&gt;(&quot;Caches collection&quot;);
+  protected final Map&lt;String, ResultMap&gt; resultMaps = new StrictMap&lt;&gt;(&quot;Result Maps collection&quot;);
+  protected final Map&lt;String, ParameterMap&gt; parameterMaps = new StrictMap&lt;&gt;(&quot;Parameter Maps collection&quot;);
+  protected final Map&lt;String, KeyGenerator&gt; keyGenerators = new StrictMap&lt;&gt;(&quot;Key Generators collection&quot;);
+
+  protected final Set&lt;String&gt; loadedResources = new HashSet&lt;&gt;();
+  protected final Map&lt;String, XNode&gt; sqlFragments = new StrictMap&lt;&gt;(&quot;XML fragments parsed from previous mappers&quot;);
+
+  protected final Collection&lt;XMLStatementBuilder&gt; incompleteStatements = new LinkedList&lt;&gt;();
+  protected final Collection&lt;CacheRefResolver&gt; incompleteCacheRefs = new LinkedList&lt;&gt;();
+  protected final Collection&lt;ResultMapResolver&gt; incompleteResultMaps = new LinkedList&lt;&gt;();
+  protected final Collection&lt;MethodResolver&gt; incompleteMethods = new LinkedList&lt;&gt;();
+
+  /*
+   * A map holds cache-ref relationship. The key is the namespace that
+   * references a cache bound to another namespace and the value is the
+   * namespace which the actual cache is bound to.
+   */
+  protected final Map&lt;String, String&gt; cacheRefMap = new HashMap&lt;&gt;();
+
+  public Configuration(Environment environment) {
+    this();
+    this.environment = environment;
+  }
+
+  public Configuration() {
+    typeAliasRegistry.registerAlias(&quot;JDBC&quot;, JdbcTransactionFactory.class);
+    typeAliasRegistry.registerAlias(&quot;MANAGED&quot;, ManagedTransactionFactory.class);
+
+    typeAliasRegistry.registerAlias(&quot;JNDI&quot;, JndiDataSourceFactory.class);
+    typeAliasRegistry.registerAlias(&quot;POOLED&quot;, PooledDataSourceFactory.class);
+    typeAliasRegistry.registerAlias(&quot;UNPOOLED&quot;, UnpooledDataSourceFactory.class);
+
+    typeAliasRegistry.registerAlias(&quot;PERPETUAL&quot;, PerpetualCache.class);
+    typeAliasRegistry.registerAlias(&quot;FIFO&quot;, FifoCache.class);
+    typeAliasRegistry.registerAlias(&quot;LRU&quot;, LruCache.class);
+    typeAliasRegistry.registerAlias(&quot;SOFT&quot;, SoftCache.class);
+    typeAliasRegistry.registerAlias(&quot;WEAK&quot;, WeakCache.class);
+
+    typeAliasRegistry.registerAlias(&quot;DB_VENDOR&quot;, VendorDatabaseIdProvider.class);
+
+    typeAliasRegistry.registerAlias(&quot;XML&quot;, XMLLanguageDriver.class);
+    typeAliasRegistry.registerAlias(&quot;RAW&quot;, RawLanguageDriver.class);
+
+    typeAliasRegistry.registerAlias(&quot;SLF4J&quot;, Slf4jImpl.class);
+    typeAliasRegistry.registerAlias(&quot;COMMONS_LOGGING&quot;, JakartaCommonsLoggingImpl.class);
+    typeAliasRegistry.registerAlias(&quot;LOG4J&quot;, Log4jImpl.class);
+    typeAliasRegistry.registerAlias(&quot;LOG4J2&quot;, Log4j2Impl.class);
+    typeAliasRegistry.registerAlias(&quot;JDK_LOGGING&quot;, Jdk14LoggingImpl.class);
+    typeAliasRegistry.registerAlias(&quot;STDOUT_LOGGING&quot;, StdOutImpl.class);
+    typeAliasRegistry.registerAlias(&quot;NO_LOGGING&quot;, NoLoggingImpl.class);
+
+    typeAliasRegistry.registerAlias(&quot;CGLIB&quot;, CglibProxyFactory.class);
+    typeAliasRegistry.registerAlias(&quot;JAVASSIST&quot;, JavassistProxyFactory.class);
+
+    languageRegistry.setDefaultDriverClass(XMLLanguageDriver.class);
+    languageRegistry.register(RawLanguageDriver.class);
+  }
+</code></pre>
+<p>基本信息初始化完成后，mybatis再根据配置文件信息进行配置，通过调用XMLConfigBuilder.parse()。</p>
+<pre><code>  public Configuration parse() {
+    if (parsed) {
+      throw new BuilderException(&quot;Each XMLConfigBuilder can only be used once.&quot;);
+    }
+    parsed = true;
+    parseConfiguration(parser.evalNode(&quot;/configuration&quot;));
+    return configuration;
+  }
+	
+  private void parseConfiguration(XNode root) {
+    try {
+      //issue #117 read properties first
+      propertiesElement(root.evalNode(&quot;properties&quot;));
+      Properties settings = settingsAsProperties(root.evalNode(&quot;settings&quot;));
+      loadCustomVfs(settings);
+      loadCustomLogImpl(settings);
+      typeAliasesElement(root.evalNode(&quot;typeAliases&quot;));
+      pluginElement(root.evalNode(&quot;plugins&quot;));
+      objectFactoryElement(root.evalNode(&quot;objectFactory&quot;));
+      objectWrapperFactoryElement(root.evalNode(&quot;objectWrapperFactory&quot;));
+      reflectorFactoryElement(root.evalNode(&quot;reflectorFactory&quot;));
+      settingsElement(settings);
+      // read it after objectFactory and objectWrapperFactory issue #631
+      environmentsElement(root.evalNode(&quot;environments&quot;));
+      databaseIdProviderElement(root.evalNode(&quot;databaseIdProvider&quot;));
+      typeHandlerElement(root.evalNode(&quot;typeHandlers&quot;));
+      mapperElement(root.evalNode(&quot;mappers&quot;));
+    } catch (Exception e) {
+      throw new BuilderException(&quot;Error parsing SQL Mapper Configuration. Cause: &quot; + e, e);
+    }
+  }	
+</code></pre>
+<p>这里我只来说一下关于mapper的初始化。<br>
+mybatis会依次通过前面说到的Resources.getResourceAsStream获取mapper的资源，然后调用parse()方法绑定Dao类。</p>
+<pre><code>  private void mapperElement(XNode parent) throws Exception {
+    if (parent != null) {
+      for (XNode child : parent.getChildren()) {
+        if (&quot;package&quot;.equals(child.getName())) {
+          String mapperPackage = child.getStringAttribute(&quot;name&quot;);
+          configuration.addMappers(mapperPackage);
+        } else {
+          String resource = child.getStringAttribute(&quot;resource&quot;);
+          String url = child.getStringAttribute(&quot;url&quot;);
+          String mapperClass = child.getStringAttribute(&quot;class&quot;);
+          if (resource != null &amp;&amp; url == null &amp;&amp; mapperClass == null) {
+            ErrorContext.instance().resource(resource);
+            InputStream inputStream = Resources.getResourceAsStream(resource);
+            XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
+            mapperParser.parse();
+          } else if (resource == null &amp;&amp; url != null &amp;&amp; mapperClass == null) {
+            ErrorContext.instance().resource(url);
+            InputStream inputStream = Resources.getUrlAsStream(url);
+            XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
+            mapperParser.parse();
+          } else if (resource == null &amp;&amp; url == null &amp;&amp; mapperClass != null) {
+            Class&lt;?&gt; mapperInterface = Resources.classForName(mapperClass);
+            configuration.addMapper(mapperInterface);
+          } else {
+            throw new BuilderException(&quot;A mapper element may only specify a url, resource or class, but not more than one.&quot;);
+          }
+        }
+      }
+    }
+  }
+</code></pre>
+<p>调用bindMapperForNamespace()方法，获取到namespace并获取到类，然后将该类添加到mapper中（后面调用getMapper()就是从这里获取）。</p>
+<pre><code>  private void bindMapperForNamespace() {
+    String namespace = builderAssistant.getCurrentNamespace();
+    if (namespace != null) {
+      Class&lt;?&gt; boundType = null;
+      try {
+        boundType = Resources.classForName(namespace);
+      } catch (ClassNotFoundException e) {
+        //ignore, bound type is not required
+      }
+      if (boundType != null) {
+        if (!configuration.hasMapper(boundType)) {
+          // Spring may not know the real resource name so we set a flag
+          // to prevent loading again this resource from the mapper interface
+          // look at MapperAnnotationBuilder#loadXmlResource
+          configuration.addLoadedResource(&quot;namespace:&quot; + namespace);
+          configuration.addMapper(boundType);
+        }
+      }
+    }
+  }
+</code></pre>
+<p>判断该类必须是一个接口，获取该类的所有方法进行动态绑定。<br>
+至此配置全部初始化完成，并返回了DefaultSqlSessionFactory。</p>
+<h2 id="3获取sqlsession">3.获取SqlSession</h2>
+<p>Environment获取到配置的事务管理器，并建新一条事务，返回默认的DefaultSqlSession</p>
+<pre><code>  private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
+    Transaction tx = null;
+    try {
+      final Environment environment = configuration.getEnvironment();
+      final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+      final Executor executor = configuration.newExecutor(tx, execType);
+      return new DefaultSqlSession(configuration, executor, autoCommit);
+    } catch (Exception e) {
+      closeTransaction(tx); // may have fetched a connection so lets call close()
+      throw ExceptionFactory.wrapException(&quot;Error opening session.  Cause: &quot; + e, e);
+    } finally {
+      ErrorContext.instance().reset();
+    }
+  }
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://Slice1129.github.io/tag/wkE8_2akE/" class="tag">
+                    Mybatis
+                  </a>
+                
+              </div>
+            
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '517165babf089deae207',
+        clientSecret: '2f627ac9b9bcac92cb8399a31a04cd9a644376fe',
+        repo: 'Slice1129.github.io',
+        owner: 'Slice1129',
+        admin: ['Slice1129'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>

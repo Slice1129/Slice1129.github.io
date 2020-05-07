@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+<meta name="referrer" content="same-origin">
+<title>Mockito笔记 | Demo</title>
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://Slice1129.github.io/favicon.ico?v=1588832966912">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://Slice1129.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g48m6n592dj20jg0ykdhx.jpg');">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://Slice1129.github.io">
+        <img src="https://Slice1129.github.io/images/avatar.png?v=1588832966912" class="site-logo">
+        <h1 class="site-title">Demo</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://Slice1129.github.io" target="_blank">Slice1129</a> | <a class="rss" href="https://Slice1129.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Mockito笔记</h2>
+            <div class="post-date">2019-07-04</div>
+            
+              <div class="feature-container" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g4nssq4gxuj20qo0f0jui.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <h2 id="一-验证某些行为">一、验证某些行为</h2>
+<p>一量mock对象被创建了，mock对象会记住所有的交互。</p>
+<pre><code>    @Test
+    public void test2() {
+        List mockList = mock(List.class);
+
+        mockList.add(&quot;one&quot;);
+        mockList.clear();
+
+        verify(mockList).add(&quot;one&quot;);
+        verify(mockList).clear();
+    }
+</code></pre>
+<h2 id="二-测试桩">二、测试桩</h2>
+<pre><code>    @Test
+    public void test3() {
+        /**
+         * 默认情况下，所有的函数都有返回值。
+         * mock函数的返回值为null,基本类型是0或默认的值。
+         */
+        List mockList = mock(ArrayList.class);
+        System.out.println(mockList + &quot;--&quot; + mockList.size());
+        mockList.add(&quot;win&quot;);
+        /**
+         * 一旦测试桩函数被调用，该函数将会一致返回固定的值
+         */
+        Mockito.when(mockList.get(0)).thenReturn(&quot;first&quot;);
+        /**
+         * 输出first
+         */
+        System.out.println(mockList.get(0));
+        Mockito.when(mockList.get(0)).thenReturn(&quot;first change&quot;);
+        Mockito.when(mockList.get(1)).thenReturn(new IndexOutOfBoundsException());
+        /**
+         * 输出first change
+         */
+        System.out.println(mockList.get(0));
+        /**
+         *抛出IndexOutOfBoundException
+         */
+        System.out.println(mockList.get(1));
+
+        /**
+         * get(2) 没有打桩，返回null
+         */
+        System.out.println(mockList.get(2));
+    }
+</code></pre>
+<h2 id="三-参数匹配器">三、参数匹配器</h2>
+<pre><code>    @Test
+    public void test4() {
+        List mockList = mock(List.class);
+        Mockito.when(mockList.get(Mockito.anyInt())).thenReturn(&quot;element&quot;);
+        System.out.println(mockList.get(10086));
+    }
+
+</code></pre>
+<h2 id="四-验证函数调用次数">四、验证函数调用次数</h2>
+<pre><code>    @Test
+    public void test5() {
+        List list = mock(List.class);
+        list.add(&quot;once&quot;);
+        list.add(&quot;twice&quot;);
+        list.add(&quot;twice&quot;);
+
+        verify(list, Mockito.times(1)).add(&quot;once&quot;);
+        verify(list, Mockito.times(2)).add(&quot;twice&quot;);
+        verify(list, Mockito.never()).add(&quot;never&quot;);
+        verify(list, Mockito.atLeastOnce()).add(&quot;twice&quot;);
+        verify(list, Mockito.atLeast(2)).add(&quot;twice&quot;);
+        verify(list, Mockito.atMost(2)).add(&quot;twice&quot;);
+    }
+</code></pre>
+<h2 id="五-简化mock对象的创建">五、简化mock对象的创建</h2>
+<pre><code>public class MockitoTestAnnotation {
+
+    @Mock
+    private ArrayList list;
+
+    @Before
+    public void setUp() {
+        System.out.println(&quot;SB&quot;);
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void verifyBehavior() {
+        list.add(&quot;one&quot;);
+        Mockito.verify(list).add(&quot;one1&quot;);
+    }
+}
+</code></pre>
+<h2 id="六-为连续的调用做测试桩">六、为连续的调用做测试桩</h2>
+<pre><code>   @Test
+    public void stubbingConsecutiveCalls(){
+        when(mockedList.get(0)).thenReturn(&quot;first&quot;).thenReturn(&quot;second&quot;);
+        //也可以这样写
+        // when(mockedList.get(0)).thenReturn(&quot;first&quot;,&quot;second&quot;);
+        System.out.println(mockedList.get(0)); //输出first
+        System.out.println(mockedList.get(0)); //输出second
+    }
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://Slice1129.github.io/tag/qNOGriHWV/" class="tag">
+                    Java
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://Slice1129.github.io/post/shu-ju-ku-san-da-fan-shi/">
+                  <h3 class="post-title">
+                    数据库三大范式
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '517165babf089deae207',
+        clientSecret: '2f627ac9b9bcac92cb8399a31a04cd9a644376fe',
+        repo: 'Slice1129.github.io',
+        owner: 'Slice1129',
+        admin: ['Slice1129'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
