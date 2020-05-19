@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 <meta name="referrer" content="same-origin">
-<title>B树和B+树及其区别？ | Demo</title>
+<title>jdk8 AtomicInteger | Demo</title>
 <meta name="description" content="">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -92,24 +92,49 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">B树和B+树及其区别？</h2>
-            <div class="post-date">2019-11-12</div>
+            <h2 class="post-title">jdk8 AtomicInteger</h2>
+            <div class="post-date">2020-05-19</div>
             
             <div class="post-content">
-              <p>B树和B+树的最主要区别在于：</p>
-<ul>
-<li>B+树是B树的改进版本，将其内结点只做索引使用，移除了指向data record的指针，使得每个节点中能够存放更多的key，因此能有更大的出度。这就意味着存放同样高度的key，树的高层能进一步被压缩，使得检索时间更短。</li>
-<li>当然了,由于底部的叶子结点是链表形式, 因此也可以实现更方便的顺序遍历, 但是这是比较次要的, 最主要的的还是第(1)点.</li>
-</ul>
+              <pre><code>    // setup to use Unsafe.compareAndSwapInt for updates
+    private static final Unsafe unsafe = Unsafe.getUnsafe();
+    private static final long valueOffset;
+
+    static {
+        try {
+            valueOffset = unsafe.objectFieldOffset
+                (AtomicInteger.class.getDeclaredField(&quot;value&quot;));
+        } catch (Exception ex) { throw new Error(ex); }
+    }
+</code></pre>
+<p>一个java对象可以看成是一段内存，各个字段都得按照一定的顺序放在这段内存里，同时考虑到对齐要求，可能这些字段不是连续放置的，用这个方法能准确地告诉你某个字段相对于对象的起始内存地址的字节偏移量，因为是相对偏移量，所以它其实跟某个具体对象又没什么太大关系，跟class的定义和虚拟机的内存模型的实现细节更相关。</p>
+<p>sun.misc.Unsafe是JDK内部用的工具类。它通过暴露一些Java意义上说“不安全”的功能给Java层代码，来让JDK能够更多的使用Java代码来实现一些原本是平台相关的、需要使用native语言（例如C或C++）才可以实现的功能。该类不应该在JDK核心类库之外使用。</p>
+<p>JVM的实现可以自由选择如何实现Java对象的“布局”，也就是在内存里Java对象的各个部分放在哪里，包括对象的实例字段和一些元数据之类。sun.misc.Unsafe里关于对象字段访问的方法把对象布局抽象出来，它提供了objectFieldOffset()方法用于获取某个字段相对Java对象的“起始地址”的偏移量，也提供了getInt、getLong、getObject之类的方法可以使用前面获取的偏移量来访问某个Java对象的某个字段。</p>
+<pre><code>    public final int incrementAndGet() {
+        return unsafe.getAndAddInt(this, valueOffset, 1) + 1;
+    }
+
+   //当前实例，内存偏移量，加多少
+    public final int getAndAddInt(Object object, long valueOffset, int addValue) {
+        //内存中的数值
+        int oldValue;
+        do {
+            oldValue = this.getIntVolatile(object, valueOffset);
+        } while(!this.compareAndSwapInt(object, valueOffset, oldValue, oldValue + addValue));
+
+        return oldValue;
+    }    
+
+</code></pre>
 
             </div>
             
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://Slice1129.github.io/post/jenkins-an-zhuang-ji-springboot-zi-dong-bu-shu/">
+                <a href="https://Slice1129.github.io/post/jdk8-threadlocal/">
                   <h3 class="post-title">
-                    Jenkins安装及SpringBoot自动部署
+                    jdk8 ThreadLocal
                   </h3>
                 </a>
               </div>

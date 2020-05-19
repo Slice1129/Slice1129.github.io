@@ -2,13 +2,51 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Slice1129.github.io</id>
     <title>Demo</title>
-    <updated>2020-05-18T09:23:53.754Z</updated>
+    <updated>2020-05-19T02:01:04.003Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Slice1129.github.io"/>
     <link rel="self" href="https://Slice1129.github.io/atom.xml"/>
     <logo>https://Slice1129.github.io/images/avatar.png</logo>
     <icon>https://Slice1129.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Demo</rights>
+    <entry>
+        <title type="html"><![CDATA[jdk8 AtomicInteger]]></title>
+        <id>https://Slice1129.github.io/post/jdk8-atomicinteger/</id>
+        <link href="https://Slice1129.github.io/post/jdk8-atomicinteger/">
+        </link>
+        <updated>2020-05-19T01:26:56.000Z</updated>
+        <content type="html"><![CDATA[<pre><code>    // setup to use Unsafe.compareAndSwapInt for updates
+    private static final Unsafe unsafe = Unsafe.getUnsafe();
+    private static final long valueOffset;
+
+    static {
+        try {
+            valueOffset = unsafe.objectFieldOffset
+                (AtomicInteger.class.getDeclaredField(&quot;value&quot;));
+        } catch (Exception ex) { throw new Error(ex); }
+    }
+</code></pre>
+<p>一个java对象可以看成是一段内存，各个字段都得按照一定的顺序放在这段内存里，同时考虑到对齐要求，可能这些字段不是连续放置的，用这个方法能准确地告诉你某个字段相对于对象的起始内存地址的字节偏移量，因为是相对偏移量，所以它其实跟某个具体对象又没什么太大关系，跟class的定义和虚拟机的内存模型的实现细节更相关。</p>
+<p>sun.misc.Unsafe是JDK内部用的工具类。它通过暴露一些Java意义上说“不安全”的功能给Java层代码，来让JDK能够更多的使用Java代码来实现一些原本是平台相关的、需要使用native语言（例如C或C++）才可以实现的功能。该类不应该在JDK核心类库之外使用。</p>
+<p>JVM的实现可以自由选择如何实现Java对象的“布局”，也就是在内存里Java对象的各个部分放在哪里，包括对象的实例字段和一些元数据之类。sun.misc.Unsafe里关于对象字段访问的方法把对象布局抽象出来，它提供了objectFieldOffset()方法用于获取某个字段相对Java对象的“起始地址”的偏移量，也提供了getInt、getLong、getObject之类的方法可以使用前面获取的偏移量来访问某个Java对象的某个字段。</p>
+<pre><code>    public final int incrementAndGet() {
+        return unsafe.getAndAddInt(this, valueOffset, 1) + 1;
+    }
+
+   //当前实例，内存偏移量，加多少
+    public final int getAndAddInt(Object object, long valueOffset, int addValue) {
+        //内存中的数值
+        int oldValue;
+        do {
+            oldValue = this.getIntVolatile(object, valueOffset);
+        } while(!this.compareAndSwapInt(object, valueOffset, oldValue, oldValue + addValue));
+
+        return oldValue;
+    }    
+
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[jdk8 ThreadLocal]]></title>
         <id>https://Slice1129.github.io/post/jdk8-threadlocal/</id>
@@ -6374,38 +6412,6 @@ TCP是主机对主机层的传输控制协议，提供可靠的连接服务，�
 第二次握手：服务器端发送SYN=1，ACK=1，Seq=0(随机数y)，Ack=1(x+1)到客户端。<br>
 第三次握手：客户端收到Ack后检查是否正确，即第一次发送的Seq number+1，如果正确，客户端会发送ACK=1，Seq=1(x+1)，Ack=1(y+1)，当服务器收到Seq和Ack后则连接建立成功。</li>
 </ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[系统CPU飙高排查]]></title>
-        <id>https://Slice1129.github.io/post/xi-tong-cpu-biao-gao-pai-cha/</id>
-        <link href="https://Slice1129.github.io/post/xi-tong-cpu-biao-gao-pai-cha/">
-        </link>
-        <updated>2019-09-24T07:41:14.000Z</updated>
-        <content type="html"><![CDATA[<p>发现接口请求无反应，登上服务器查看发现CPU一直居高不下。<br>
-直接敲</p>
-<pre><code>top
-</code></pre>
-<p><img src="https://ww1.sinaimg.cn/large/b828643bgy1g7ankw1e5dj218p0qxwi3.jpg" alt="图片1" loading="lazy"><br>
-我们发现PID为9698的进程占用了99.9的CPU，接下来查看该进程里面哪个线程存在高运算。</p>
-<pre><code>top -Hp 9698
-</code></pre>
-<p><img src="https://ww1.sinaimg.cn/large/b828643bgy1g7anqbre9aj21950m9adu.jpg" alt="图片2" loading="lazy"><br>
-图片显示PID为9720的线程占用的比较多，我们先将转成16进制，稍后在jstack中方便查找。</p>
-<pre><code>printf &quot;%x\n&quot; 9720
-25f8
-</code></pre>
-<p>下面使用jstack导出运行时的日志。</p>
-<pre><code>jstack 9698 &gt;&gt; 9698cpu.log
-</code></pre>
-<p>或者直接查看</p>
-<pre><code>jstack 9698
-</code></pre>
-<p><img src="https://ww1.sinaimg.cn/large/b828643bgy1g7ao2y4cepj218y0qiag7.jpg" alt="图片3" loading="lazy"><br>
-我们找到了UserController的第55行代码一直占用CPU。我们打开IDEA查看<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g7ao6iunghj21ee0bxjtk.jpg" alt="图片4" loading="lazy"><br>
-我们找到了罪魁祸首。<br>
-O(∩_∩)O哈哈~，其实这些只是为了测试而已。</p>
 ]]></content>
     </entry>
 </feed>
