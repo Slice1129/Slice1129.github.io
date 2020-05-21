@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+<meta name="referrer" content="same-origin">
+<title>Java Thread:揭开Run方法被调用的真正面纱 | Demo</title>
+<meta name="description" content="">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://Slice1129.github.io/favicon.ico?v=1590040143025">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://Slice1129.github.io/styles/main.css">
+
+
+  
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css" />
+  
+
+  
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g48m6n592dj20jg0ykdhx.jpg');">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://Slice1129.github.io">
+        <img src="https://Slice1129.github.io/images/avatar.png?v=1590040143025" class="site-logo">
+        <h1 class="site-title">Demo</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    </div>
+    <div class="site-description">
+      
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://Slice1129.github.io" target="_blank">Slice1129</a> | <a class="rss" href="https://Slice1129.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">Java Thread:揭开Run方法被调用的真正面纱</h2>
+            <div class="post-date">2020-05-21</div>
+            
+              <div class="feature-container" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1gf00viv5hej20qo0f0aeg.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <h2 id="导语">导语</h2>
+<p>我们知道，new一个thread，调用它的start的方法，就可以创建一个线程，并且启动该线程，然后执行该线程需要执行的业务逻辑，那么run方法是怎么被执行的呢？</p>
+<h2 id="java线程和os线程">Java线程和os线程</h2>
+<h3 id="os线程">os线程</h3>
+<p>我们知道，java的一个线程实际上是对应了操作系统的一个线程；<br>
+而操作系统实现线程有三种方式：</p>
+<ul>
+<li>内核线程实现</li>
+<li>用户线程实现</li>
+<li>用户线程加轻量级进程混合实现<br>
+具体详细实现方式就不具体讲了，参见 «深入理解 JAVA虚拟机»第二版 第12章 Java内存模型与线程（378页）</li>
+</ul>
+<h3 id="java线程">Java线程</h3>
+<p>Java线程在JDK1.2之前，是基于用户线程实现的。而在JDK1.2中，线程模型替换为基于操作系统原生线程模型来实现。<br>
+而在目前的JDK版本中，操作系统支持怎样的线程模型，在很大程度上决定了Java虚拟机的线程是怎样映射的，这点在不同的平台上没法达成一致。<br>
+对于Sun JDK来说，它的Windows版本和Linux版本都是使用一对一的线程模型实现的，一条Java线程映射到一条轻量级进程之中。<br>
+以上按个人理解摘自： «深入理解 JAVA虚拟机»第二版</p>
+<h2 id="java线程创建">Java线程创建</h2>
+<h3 id="创建方式">创建方式</h3>
+<p><img src="https://ww1.sinaimg.cn/large/b828643bgy1gf00owwjhhj20hv0cc40a.jpg" alt="创建方式" loading="lazy"><br>
+我们看到，无论以哪种方式创建，最终我们都会重写一个叫做 run 的方法，来处理我们的业务逻辑，然而我们都是调用一个start方法，来启动一个线程；</p>
+<p>那 start方法和run方法之间是一个什么关系呢？从后边的介绍我们将获得这样一个信息：run就是一个回调函数，和我们普通的函数没有区别。</p>
+<h3 id="java线程的实现">Java线程的实现</h3>
+<p>一个 Java 线程的创建本质上就对应了一个本地线程（native thread）的创建，两者是一一对应的。<br>
+关键问题是：本地线程执行的应该是本地代码，而 Java 线程提供的线程函数（run）是 Java 方法，编译出的是 Java 字节码，<br>
+所以， Java 线程其实提供了一个统一的线程函数，该线程函数通过 Java 虚拟机调用 Java 线程方法 , 这是通过 Java 本地方法调用来实现的。</p>
+<h3 id="以下是-threadstart-方法的示例">以下是 Thread#start 方法的示例：</h3>
+<p><img src="https://ww1.sinaimg.cn/large/b828643bgy1gf00ox10ybj20mz0gg429.jpg" alt="" loading="lazy"><br>
+可以看到它实际上调用了本地方法 start0, 而start0声明如下：</p>
+<pre><code>private native void start0();
+</code></pre>
+<p>也就是新创建的线程启动调用native start0方法，而这些native方法的注册是在Thread对象初始化的时候完成的，look：<br>
+<img src="https://ww1.sinaimg.cn/large/b828643bgy1gf00owvz39j20gx03w74x.jpg" alt="" loading="lazy"><br>
+Thread 类有个 registerNatives 本地方法，该方法主要的作用就是注册一些本地方法供 Thread 类使用，如 start0()，stop0() 等等，可以说，所有操作本地线程的本地方法都是由它注册的。<br>
+这个方法放在一个 static 语句块中，当该类被加载到 JVM 中的时候，它就会被调用，进而注册相应的本地方法。<br>
+而本地方法 registerNatives 是定义在 Thread.c 文件中的。Thread.c 是个很小的文件，它定义了各个操作系统平台都要用到的关于线程的公用数据和操作，如下：</p>
+<pre><code> JNIEXPORT void JNICALL
+  Java_Java_lang_Thread_registerNatives (JNIEnv *env, jclass cls){ //registerNatives
+    (*env)-&gt;RegisterNatives(env, cls, methods, ARRAY_LENGTH(methods));
+  }
+  static JNINativeMethod methods[] = {
+     {&quot;start0&quot;, &quot;()V&quot;,(void *)&amp;JVM_StartThread}, //start0 方法
+     {&quot;stop0&quot;, &quot;(&quot; OBJ &quot;)V&quot;, (void *)&amp;JVM_StopThread},
+      {&quot;isAlive&quot;,&quot;()Z&quot;,(void *)&amp;JVM_IsThreadAlive},
+      {&quot;suspend0&quot;,&quot;()V&quot;,(void *)&amp;JVM_SuspendThread},
+      {&quot;resume0&quot;,&quot;()V&quot;,(void *)&amp;JVM_ResumeThread},
+      {&quot;setPriority0&quot;,&quot;(I)V&quot;,(void *)&amp;JVM_SetThreadPriority},
+      {&quot;yield&quot;, &quot;()V&quot;,(void *)&amp;JVM_Yield},
+      {&quot;sleep&quot;,&quot;(J)V&quot;,(void *)&amp;JVM_Sleep},
+      {&quot;currentThread&quot;,&quot;()&quot; THD,(void *)&amp;JVM_CurrentThread},
+      {&quot;countStackFrames&quot;,&quot;()I&quot;,(void *)&amp;JVM_CountStackFrames},
+      {&quot;interrupt0&quot;,&quot;()V&quot;,(void *)&amp;JVM_Interrupt},
+      {&quot;isInterrupted&quot;,&quot;(Z)Z&quot;,(void *)&amp;JVM_IsInterrupted},
+      {&quot;holdsLock&quot;,&quot;(&quot; OBJ &quot;)Z&quot;,(void *)&amp;JVM_HoldsLock},
+      {&quot;getThreads&quot;,&quot;()[&quot; THD,(void *)&amp;JVM_GetAllThreads},
+      {&quot;dumpThreads&quot;,&quot;([&quot; THD &quot;)[[&quot; STE, (void *)&amp;JVM_DumpThreads},
+  };
+</code></pre>
+<p>观察上边一小段代码，可以容易的看出 Java 线程调用 start-&gt;start0 的方法，实际上会调用到 JVM_StartThread 方法，那这个方法又是怎么处理的呢？<br>
+实际上，我们需要看到的是该方法最终要调用 Java 线程的 run 方法，事实的确也是这样的。<br>
+在 jvm.cpp 中，有如代码段：</p>
+<pre><code>JVM_ENTRY(void, JVM_StartThread(JNIEnv* env, jobject jthread)){
+    ...
+    native_thread = new JavaThread(&amp;thread_entry, sz);
+    ...
+}
+</code></pre>
+<p>这里JVM_ENTRY是一个宏，用来定义JVM_StartThread 函数，可以看到函数内创建了真正的平台相关的本地线程，其线程函数是 thread_entry，如下：</p>
+<pre><code>static void thread_entry(JavaThread* thread, TRAPS) {
+    HandleMark hm(THREAD);
+    Handle obj(THREAD, thread-&gt;threadObj());
+    JavaValue result(T_VOID);
+    JavaCalls::call_virtual(&amp;result,obj,
+    KlassHandle(THREAD,SystemDictionary::Thread_klass()),
+    vmSymbolHandles::run_method_name(),    //LOOK! 看这里
+    vmSymbolHandles::void_method_signature(),THREAD);
+ }
+</code></pre>
+<p>可以看到调用了 vmSymbolHandles::run_method_name 方法，而run_method_name是在 vmSymbols.hpp 用宏定义的：</p>
+<pre><code>class vmSymbolHandles: AllStatic {
+   ...
+    template(run_method_name,&quot;run&quot;)  //LOOK!!! 这里决定了调用的方法名称是 “run”!
+   ...
+}
+</code></pre>
+<h2 id="java线程创建调用关系">Java线程创建调用关系</h2>
+<figure data-type="image" tabindex="1"><img src="https://ww1.sinaimg.cn/large/b828643bgy1gf00owy3xnj21340madig.jpg" alt="" loading="lazy"></figure>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://Slice1129.github.io/tag/qNOGriHWV/" class="tag">
+                    Java
+                  </a>
+                
+              </div>
+            
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://Slice1129.github.io/post/jdk8-threadpoolexecutor/">
+                  <h3 class="post-title">
+                    jdk8 ThreadPoolExecutor
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+<script type="application/javascript">
+
+AOS.init();
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+  
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: '517165babf089deae207',
+        clientSecret: '2f627ac9b9bcac92cb8399a31a04cd9a644376fe',
+        repo: 'Slice1129.github.io',
+        owner: 'Slice1129',
+        admin: ['Slice1129'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+
+  </body>
+</html>
