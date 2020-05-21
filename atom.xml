@@ -2,13 +2,53 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://Slice1129.github.io</id>
     <title>Demo</title>
-    <updated>2020-05-21T08:52:10.395Z</updated>
+    <updated>2020-05-21T09:18:46.258Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://Slice1129.github.io"/>
     <link rel="self" href="https://Slice1129.github.io/atom.xml"/>
     <logo>https://Slice1129.github.io/images/avatar.png</logo>
     <icon>https://Slice1129.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Demo</rights>
+    <entry>
+        <title type="html"><![CDATA[jdk8 ReentrantLock 注意点]]></title>
+        <id>https://Slice1129.github.io/post/jdk8-reentrantlock-zhu-yi-dian/</id>
+        <link href="https://Slice1129.github.io/post/jdk8-reentrantlock-zhu-yi-dian/">
+        </link>
+        <updated>2020-05-21T08:56:40.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li>void lock();</li>
+</ul>
+<h3 id="在等待获取锁的过程中休眠并禁止一切线程调度">在等待获取锁的过程中休眠并禁止一切线程调度</h3>
+<ul>
+<li>void lockInterruptibly() throws InterruptedException;</li>
+</ul>
+<h3 id="在等待获取锁的过程中可被中断">在等待获取锁的过程中可被中断</h3>
+<ul>
+<li>boolean tryLock();</li>
+</ul>
+<h3 id="获取到锁并返回true获取不到并返回false">获取到锁并返回true；获取不到并返回false</h3>
+<ul>
+<li>boolean tryLock(long time, TimeUnit unit) throws InterruptedException;</li>
+</ul>
+<h3 id="在指定时间内等待获取锁过程中可被中断">在指定时间内等待获取锁；过程中可被中断</h3>
+<p>假如线程A和线程B使用同一个锁LOCK，此时线程A首先获取到锁LOCK.lock()，并且始终持有不释放。如果此时B要去获取锁，有四种方式：</p>
+<ul>
+<li>
+<p>LOCK.lock(): 此方式会始终处于等待中，即使调用B.interrupt()也不能中断，除非线程A调用LOCK.unlock()释放锁。</p>
+</li>
+<li>
+<p>LOCK.lockInterruptibly(): 此方式会等待，但当调用B.interrupt()会被中断等待，并抛出InterruptedException异常，否则会与lock()一样始终处于等待中，直到线程A释放锁。</p>
+</li>
+<li>
+<p>LOCK.tryLock(): 该处不会等待，获取不到锁并直接返回false，去执行下面的逻辑。</p>
+</li>
+<li>
+<p>LOCK.tryLock(10, TimeUnit.SECONDS)：该处会在10秒时间内处于等待中，但当调用B.interrupt()会被中断等待，并抛出InterruptedException。10秒时间内如果线程A释放锁，会获取到锁并返回true，否则10秒过后会获取不到锁并返回false，去执行下面的逻辑。</p>
+</li>
+</ul>
+<p>Condition newCondition() 译为：“条件”，创建一个新的Condition，绑定到当前Lock上。Lock 替代了 synchronized 方法和语句的使用，而Condition 替代了 Object 监视器方法的使用。在Condition中，await()相当于wait()，signal()相当于notify()，signalAll()相当于notifyAll()。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[jdk8 ReentrantLock]]></title>
         <id>https://Slice1129.github.io/post/jdk8-reentrantlock/</id>
@@ -9226,145 +9266,6 @@ public class ArrayList&lt;E&gt; extends AbstractList&lt;E&gt;
 <li>B+树是B树的改进版本，将其内结点只做索引使用，移除了指向data record的指针，使得每个节点中能够存放更多的key，因此能有更大的出度。这就意味着存放同样高度的key，树的高层能进一步被压缩，使得检索时间更短。</li>
 <li>当然了,由于底部的叶子结点是链表形式, 因此也可以实现更方便的顺序遍历, 但是这是比较次要的, 最主要的的还是第(1)点.</li>
 </ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Jenkins安装及SpringBoot自动部署]]></title>
-        <id>https://Slice1129.github.io/post/jenkins-an-zhuang-ji-springboot-zi-dong-bu-shu/</id>
-        <link href="https://Slice1129.github.io/post/jenkins-an-zhuang-ji-springboot-zi-dong-bu-shu/">
-        </link>
-        <updated>2019-11-08T08:12:51.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="1-安装jenkins">1、安装Jenkins</h1>
-<p>打开网站<code>https://jenkins.io/zh/download/</code>，仅下载war包。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qqed0olxj21880ol0uv.jpg" alt="" loading="lazy"></p>
-<h1 id="2-启动jenkins">2、启动Jenkins</h1>
-<p>将Jenkins.war放置到某个目录，然后通过java -jar 启动,httpPort设置端口为9090</p>
-<pre><code>/usr/local/jdk8/bin/java -jar /usr/local/jenkins/jenkins.war --httpPort=9090 -XX:ErrorFile=/usr/local/jenkins//hs_err_pid%p.log
-</code></pre>
-<p>等待启动完成。</p>
-<h1 id="3-打开jenkins">3、打开Jenkins</h1>
-<p>如果是在本机启动的，则打开浏览器输入<code>http://localhost:9090/</code>，如果是服务器，则<code>host:9090</code>，记得打开防火墙端口。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qr3e3hgtj21ik15maer.jpg" alt="" loading="lazy"><br>
-我们去服务器中查看密码是多少。</p>
-<pre><code>cat /**/** #图中的路径 
-</code></pre>
-<p>登录进去之后。因为刚开始使用，选择推荐安装，后续要其它插件的话，可在系统设置里再安装。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qr6s2jw8j21i80q2jx4.jpg" alt="" loading="lazy"><br>
-安装过程比较慢，可以先去干点其它事情。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qr8tjrr8j21130opdhr.jpg" alt="" loading="lazy"></p>
-<ul>
-<li>安装Git<pre><code>yum install git
-</code></pre>
-</li>
-<li>安装maven<br>
-打开网址下载<code>https://maven.apache.org/download.cgi</code>，选择下载。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrfchb7tj21fx0nuteh.jpg" alt="maven" loading="lazy"><br>
-下载完成后，解压到某个目录，等会用到。</li>
-</ul>
-<h1 id="配置环境">配置环境</h1>
-<p>点击 <code>系统管理</code>，<code>全局工具配置</code>。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tusu2hqrj21hc0okgpo.jpg" alt="配置" loading="lazy"><br>
-设置maven的配置文件，并设置jdk的目录。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tuv8jsh6j218z0jpq40.jpg" alt="" loading="lazy"><br>
-配置maven目录。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tuvvgedvj216q0dr3yz.jpg" alt="" loading="lazy"><br>
-配置过程服务器，要先安装插件<code>publish over ssh</code>。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tw6y8ltfj21h30ha0tm.jpg" alt="" loading="lazy"><br>
-配置后如图.<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8twjd9diyj21ew0lm3zr.jpg" alt="" loading="lazy"></p>
-<table>
-<thead>
-<tr>
-<th>字段</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Name</td>
-<td>服务器的名字，可随便定义</td>
-</tr>
-<tr>
-<td>Hostname</td>
-<td>服务器的IP地址</td>
-</tr>
-<tr>
-<td>Username</td>
-<td>用户名</td>
-</tr>
-<tr>
-<td>Remote Directory</td>
-<td>远程服务器上的根目录，jenkis打包后的程序放在此目录下</td>
-</tr>
-<tr>
-<td>Passphrase / Password</td>
-<td>密码（记得勾选Use password authentication, or use a different key）</td>
-</tr>
-<tr>
-<td>Port</td>
-<td>服务器端口</td>
-</tr>
-</tbody>
-</table>
-<h1 id="新建任务">新建任务</h1>
-<p>输入项目名称，选择<code>构建一个maven项目</code>。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qri896cej21g50oo77v.jpg" alt="选择maven项目" loading="lazy"></p>
-<p>是不是没有找到maven项目，这时我们还得安装一个插件。<br>
-系统设置-插件管理-可选插件，搜索<code>Maven Integration</code><br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8tvp338gmj21f90lzq5m.jpg" alt="" loading="lazy"><br>
-等待安装完成，安装成功后，点击返回工作台，继续<code>新建任务</code>，此时就看见了<code>构建一个maven</code>项目。<br>
-滚动到源码管理。选择Git，输入我们仓库地址。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrmyommzj21dy0m2wfz.jpg" alt="git地址" loading="lazy"><br>
-图中显示的是验证失败，因为还没有登录git账号。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrp1n588j21fa0nrgn1.jpg" alt="添加git" loading="lazy"><br>
-输入账号和密码后，点击添加即可。分支默认是<code>master</code>，如果与你的仓库不一样，请更改。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrqiq78kj21320g5752.jpg" alt="分支" loading="lazy"><br>
-默认勾选，意思是 每当建立SNAPSHOT依赖项时就进行构建<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrt46elgj215a0awwf6.jpg" alt="" loading="lazy"><br>
-选择我们前面添加的服务器，后期编辑后会上传至服务器。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8qrvgn5gdj214y0l7abg.jpg" alt="推送至服务器" loading="lazy"></p>
-<table>
-<thead>
-<tr>
-<th>配置项</th>
-<th>值</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>名称</td>
-<td>本地服务器</td>
-<td>SSH Server名称，根据之前配置选择即可</td>
-</tr>
-<tr>
-<td>源文件</td>
-<td>target/*</td>
-<td>需要传输的文件，支持通配符，编译文件默认都在项目根目录下的target目录中</td>
-</tr>
-<tr>
-<td>删除前缀</td>
-<td>target</td>
-<td>移除匹配到的文件路径的前缀，如果留空，会在远程服务器上创建对应的目录</td>
-</tr>
-<tr>
-<td>远端目录</td>
-<td>jenkins_web/</td>
-<td>远程服务器上的项目目录，该目录会被创建在Publish over SSH配置的远程根目录中(/usr/local/applications/)</td>
-</tr>
-<tr>
-<td>执行命令</td>
-<td>cd /usr/local/applications/jenkins_web/ <br> nohup /usr/local/jdk8/bin/java -jar jenkins-0.0.1-SNAPSHOT.jar &gt; nohup.out &amp; 2&gt;&amp;1 &amp;</td>
-<td>文件传输到远程服务器后执行的命令</td>
-</tr>
-</tbody>
-</table>
-<p>在打包时输入自定义的参数<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8t39dehsaj211z0ocjsn.jpg" alt="maven打包" loading="lazy"><br>
-然后保存即可。</p>
-<p>最后，点击 立即构建 ，等待构建完成。<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g8t3fxrumdj213d0crdhi.jpg" alt="" loading="lazy"><br>
-访问Web程序的端口，尝试是否能请求成功。</p>
 ]]></content>
     </entry>
 </feed>

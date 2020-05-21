@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" >
 <meta name="referrer" content="same-origin">
-<title>图解TCP协议中的三次握手 | Demo</title>
+<title>jdk8 ReentrantLock 注意点 | Demo</title>
 <meta name="description" content="">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -92,40 +92,49 @@
       <div class="main-container">
         <div class="content-container" data-aos="fade-up">
           <div class="post-detail">
-            <h2 class="post-title">图解TCP协议中的三次握手</h2>
-            <div class="post-date">2019-09-26</div>
-            
-              <div class="feature-container" style="background-image: url('https://ww1.sinaimg.cn/large/b828643bgy1g7cw6eqqd2j20qo0f0tem.jpg')">
-              </div>
+            <h2 class="post-title">jdk8 ReentrantLock 注意点</h2>
+            <div class="post-date">2020-05-21</div>
             
             <div class="post-content">
-              <p>TCP全称（Transmission Control Protocol）传输控制协议。<br>
-TCP是主机对主机层的传输控制协议，提供可靠的连接服务，采用三次握手确定建立一个连接：<br>
-位码即TCP标志位，有6种标示</p>
-<ul>
-<li>SYN（synchronous）建立联机</li>
-<li>ACK（acknowledgement）确认</li>
-<li>PSH（push）传送</li>
-<li>FIN（finish）结束</li>
-<li>RST（reset）重置</li>
-<li>URG（urgent）紧急<br>
-其中Sequence number为顺序号码，Acknowledge number为确认号码。<br>
-先来看看如何建立连接的：<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g7cvruwt57j20nb0g07fa.jpg" alt="" loading="lazy"><br>
-实际上是这样的，看红色框：<br>
-<img src="https://ww1.sinaimg.cn/large/b828643bgy1g7cw9yznt2j21hc0n8wha.jpg" alt="" loading="lazy"><br>
-第一次握手：<br>
-客户端发送SYN=1，Seq=(x=0，这里为了方便图中是0，其实是随机数)到服务器，服务器由SYN=1知道客户端要求建立联机。<br>
-第二次握手：服务器端发送SYN=1，ACK=1，Seq=0(随机数y)，Ack=1(x+1)到客户端。<br>
-第三次握手：客户端收到Ack后检查是否正确，即第一次发送的Seq number+1，如果正确，客户端会发送ACK=1，Seq=1(x+1)，Ack=1(y+1)，当服务器收到Seq和Ack后则连接建立成功。</li>
+              <ul>
+<li>void lock();</li>
 </ul>
+<h3 id="在等待获取锁的过程中休眠并禁止一切线程调度">在等待获取锁的过程中休眠并禁止一切线程调度</h3>
+<ul>
+<li>void lockInterruptibly() throws InterruptedException;</li>
+</ul>
+<h3 id="在等待获取锁的过程中可被中断">在等待获取锁的过程中可被中断</h3>
+<ul>
+<li>boolean tryLock();</li>
+</ul>
+<h3 id="获取到锁并返回true获取不到并返回false">获取到锁并返回true；获取不到并返回false</h3>
+<ul>
+<li>boolean tryLock(long time, TimeUnit unit) throws InterruptedException;</li>
+</ul>
+<h3 id="在指定时间内等待获取锁过程中可被中断">在指定时间内等待获取锁；过程中可被中断</h3>
+<p>假如线程A和线程B使用同一个锁LOCK，此时线程A首先获取到锁LOCK.lock()，并且始终持有不释放。如果此时B要去获取锁，有四种方式：</p>
+<ul>
+<li>
+<p>LOCK.lock(): 此方式会始终处于等待中，即使调用B.interrupt()也不能中断，除非线程A调用LOCK.unlock()释放锁。</p>
+</li>
+<li>
+<p>LOCK.lockInterruptibly(): 此方式会等待，但当调用B.interrupt()会被中断等待，并抛出InterruptedException异常，否则会与lock()一样始终处于等待中，直到线程A释放锁。</p>
+</li>
+<li>
+<p>LOCK.tryLock(): 该处不会等待，获取不到锁并直接返回false，去执行下面的逻辑。</p>
+</li>
+<li>
+<p>LOCK.tryLock(10, TimeUnit.SECONDS)：该处会在10秒时间内处于等待中，但当调用B.interrupt()会被中断等待，并抛出InterruptedException。10秒时间内如果线程A释放锁，会获取到锁并返回true，否则10秒过后会获取不到锁并返回false，去执行下面的逻辑。</p>
+</li>
+</ul>
+<p>Condition newCondition() 译为：“条件”，创建一个新的Condition，绑定到当前Lock上。Lock 替代了 synchronized 方法和语句的使用，而Condition 替代了 Object 监视器方法的使用。在Condition中，await()相当于wait()，signal()相当于notify()，signalAll()相当于notifyAll()。</p>
 
             </div>
             
               <div class="tag-container">
                 
-                  <a href="https://Slice1129.github.io/tag/AGzTTBS1D/" class="tag">
-                    TCP
+                  <a href="https://Slice1129.github.io/tag/qNOGriHWV/" class="tag">
+                    Java
                   </a>
                 
               </div>
@@ -133,9 +142,9 @@ TCP是主机对主机层的传输控制协议，提供可靠的连接服务，�
             
               <div class="next-post">
                 <div class="next">下一篇</div>
-                <a href="https://Slice1129.github.io/post/xi-tong-cpu-biao-gao-pai-cha/">
+                <a href="https://Slice1129.github.io/post/jdk8-reentrantlock/">
                   <h3 class="post-title">
-                    系统CPU飙高排查
+                    jdk8 ReentrantLock
                   </h3>
                 </a>
               </div>
